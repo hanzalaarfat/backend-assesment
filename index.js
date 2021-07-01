@@ -8,6 +8,7 @@ require("./passport");
 
 const todoRoute = require("./router/todorouter");
 const ActiveUser = require("./Models/ActiveUser");
+const todoComment = require("./router/commentrouter");
 const todoActive = require("./router/activerouter");
 
 const app = express();
@@ -132,6 +133,7 @@ app.get(
 
 app.use("/todo", todoRoute);
 app.use("/activeuser", todoActive);
+app.use("/comment", todoComment);
 
 mongoose.connect(
   "mongodb+srv://nikhilkumar:bhQWUrUfnDq0aaKw@cluster0.g2p2u.mongodb.net/Test?retryWrites=true&w=majority",
