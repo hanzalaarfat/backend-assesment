@@ -7,6 +7,8 @@ const bcrypt = require("bcryptjs");
 require("./passport");
 
 const todoRoute = require("./router/todorouter");
+const ActiveUser = require("./Models/ActiveUser");
+const todoActive = require("./router/activerouter");
 
 const app = express();
 
@@ -61,12 +63,27 @@ app.post("/login", async function (req, res, next) {
   //Check If User Exists
   await User.findOne({ email: email }).exec((err, user) => {
     if (user) {
-      bcrypt.compare(password, user.password, (err, isMatch) => {
+      bcrypt.compare(password, user.password, async (err, isMatch) => {
         if (err) throw err;
         if (isMatch) {
           console.log(user._id);
           const token = genToken(user);
-          res.status(200).json({ token, userid: user._id });
+          await ActiveUser.find({ userId: user._id }).exec((err, usr) => {
+            if (usr.length == 0) {
+              console.log("Active user block", usr.length);
+
+              const activeuser = new ActiveUser({
+                day: day,
+                month: month,
+                userId: user._id,
+              });
+              activeuser.save().then((active) => {
+                res.status(200).json({ token, userid: user._id });
+              });
+            } else {
+              res.status(200).json({ token, userid: user._id });
+            }
+          });
         } else {
           return res.status(403).json({ message: "Wrong Password" });
         }
@@ -114,6 +131,7 @@ app.get(
 );
 
 app.use("/todo", todoRoute);
+app.use("/activeuser", todoActive);
 
 mongoose.connect(
   "mongodb+srv://nikhilkumar:bhQWUrUfnDq0aaKw@cluster0.g2p2u.mongodb.net/Test?retryWrites=true&w=majority",
