@@ -1,22 +1,21 @@
-const mongoose = require("mongoose");
-const ActiveUserSchema = new mongoose.Schema(
-  {
-    day: {
-      type: Number,
-      required: true,
-    },
-    week: {
-      type: String,
-    },
-    month: {
-      type: String,
-      required: true,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+const  mongoose = require('mongoose')
+const ActiveUserSchema = new mongoose.Schema({
+  day: {
+    type: Number,
+    required: true,
   },
-  { timestamps: true }
-);
-module.exports = mongoose.model("ActiveUser", ActiveUserSchema);
+  week: {
+    type: String,
+   
+  },
+  month: {
+    type: String,
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }
+
+},{timestamps: true})
+module.exports = mongoose.model('ActiveUser',ActiveUserSchema)

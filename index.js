@@ -4,14 +4,18 @@ const passport = require("passport");
 const User = require("./Models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+// const env = require('dotenv')
+
 require("./passport");
 
 const todoRoute = require("./router/todorouter");
-const ActiveUser = require("./Models/ActiveUser");
 const todoComment = require("./router/commentrouter");
 const todoActive = require("./router/activerouter");
+const todoTag = require("./router/tagrouter");
+const ActiveUser = require("./Models/ActiveUser");
 
 const app = express();
+// env.config();
 
 let startDate = new Date();
 const months = [
@@ -36,6 +40,7 @@ const fullDate = day + " " + month + " " + year;
 const currentDate = month1 + 1 + "/" + day + "/" + year;
 
 const active_user = 0;
+console.log(typeof day);
 
 genToken = (user) => {
   return jwt.sign(
@@ -132,8 +137,9 @@ app.get(
 );
 
 app.use("/todo", todoRoute);
-app.use("/activeuser", todoActive);
 app.use("/comment", todoComment);
+app.use("/activeuser", todoActive);
+app.use("/tag", todoTag);
 
 mongoose.connect(
   "mongodb+srv://nikhilkumar:bhQWUrUfnDq0aaKw@cluster0.g2p2u.mongodb.net/Test?retryWrites=true&w=majority",
