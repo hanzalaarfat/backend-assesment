@@ -4,7 +4,7 @@ const passport = require("passport");
 const User = require("./Models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-// const env = require('dotenv')
+const env = require("dotenv");
 
 require("./passport");
 
@@ -17,7 +17,12 @@ const todoView = require("./router/viewrouter");
 const ActiveUser = require("./Models/ActiveUser");
 
 const app = express();
-// env.config();
+env.config();
+
+var Publishable_Key = process.env.publishablekey;
+var Secret_Key = process.env.secretkey;
+
+const stripe = require("stripe")(Secret_Key);
 
 let startDate = new Date();
 const months = [
@@ -59,7 +64,10 @@ app.use(express.json());
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.get("/", function (req, res) {
-  res.render("home");
+  res.render("home", {
+    key: Publishable_Key,
+  });
+  // res.render("home");
 });
 
 app.get("/login", function (req, res) {
@@ -138,6 +146,38 @@ app.get(
   }
 );
 
+app.post("/payment", function (req, res) {
+  // Moreover you can take more details from user
+  // like Address, Name, etc from form
+  stripe.customers
+    .create({
+      email: req.body.stripeEmail,
+      source: req.body.stripeToken,
+      name: "Gautam Sharma",
+      address: {
+        line1: "TC 9/4 Old MES colony",
+        postal_code: "110092",
+        city: "New Delhi",
+        state: "Delhi",
+        country: "India",
+      },
+    })
+    .then((customer) => {
+      return stripe.charges.create({
+        amount: 7000, // Charing Rs 25
+        description: "Web Development Product",
+        currency: "USD",
+        customer: customer.id,
+      });
+    })
+    .then((charge) => {
+      res.send("Success"); // If no error occurs
+    })
+    .catch((err) => {
+      res.send(err); // If some error occurs
+    });
+});
+
 /////////TO find Users with maximum task completion using sorting technique to find it////////////////
 
 app.get("/count", async (req, res) => {
@@ -163,11 +203,12 @@ app.use("/activeuser", todoActive);
 app.use("/tag", todoTag);
 app.use("/excel", todoDownload);
 app.use("/view", todoView);
-
-mongoose.connect(
-  "mongodb+srv://nikhilkumar:bhQWUrUfnDq0aaKw@cluster0.g2p2u.mongodb.net/Test?retryWrites=true&w=majority",
-  { useNewUrlParser: true, useUnifiedTopology: true }
-);
+console.log(process.env.MONGO_DB_URI);
+mongoose.connect(process.env.MONGO_DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+});
 mongoose.connection
   .once("open", function () {
     console.log("Connected to Mongo");
@@ -175,6 +216,7 @@ mongoose.connection
   .on("error", function (err) {
     console.log("Mongo Error", err);
   });
-app.listen(5000, () => {
+
+app.listen(3000, () => {
   console.log("Server is up and running at the port 5000");
 });
